@@ -1,0 +1,32 @@
+{
+  "name": "redext",
+  "version": "0.0.2",
+  "description": "A simple global store based on React Context and Hooks",
+  "main": "./dist/index.js",
+  "scripts": {
+    "build": "rollup -c"
+  },
+  "keywords": [
+    "react",
+    "react-context",
+    "react-hooks"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/toiladoong/redext.git"
+  },
+  "homepage": "https://github.com/toiladoong/redext",
+  "dependencies": {
+    "@rollup/plugin-strip": "^2.0.0",
+    "rollup-plugin-local-resolve": "^1.0.7",
+    "rollup-plugin-uglify": "^6.0.4"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.4.5",
+    "@babel/plugin-proposal-class-properties": "^7.8.3",
+    "@babel/preset-env": "^7.4.5",
+    "@babel/preset-react": "^7.0.0",
+    "rollup": "^2.32.1",
+    "rollup-plugin-babel": "^4.4.0"
+  }
+}
