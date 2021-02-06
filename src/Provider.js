@@ -1,18 +1,16 @@
-import React, { useCallback, useReducer, useRef } from 'react';
-import { useIsomorphicLayoutEffect } from './utils';
+import React, { useReducer, useRef } from 'react';
 import Context from './Context';
-import bindActionCreators from './bindActionCreators';
 
 const Provider = (props) => {
-  const { store } = props;
+  const { store, ...providerProps } = props;
 
-  const initialState = store ? store.getState(props.initialValue) : props.rootReducer(props.initialValue || {}, { type: '__INIT__' });
+  if (!store) {
+    throw new Error('Please use <Provider store={...} initialValue={...}>');
+  }
 
-  const reducer = store ? store.getReducer : props.rootReducer;
+  const initialState = store.getState(props.initialValue);
 
-  const [state, dispatch] = useReducer(reducer, initialState);
-
-  const subscribers = useRef([]);
+  const [state, dispatch] = useReducer(store.getReducer, initialState);
 
   const stateRef = useRef(initialState);
 
@@ -22,45 +20,18 @@ const Provider = (props) => {
     return stateRef.current;
   };
 
-  const actions = bindActionCreators({
-    dispatch,
-    getState,
-    cookies: props.cookies
-  }, props.rootAction || {});
-
-  const effects = store && store.getEffect(dispatch, state) || {};
-
-  useIsomorphicLayoutEffect(() => {
-    subscribers.current.forEach(fn => fn(state));
-  }, [state]);
-
-  const subscribe = useCallback((fn) => {
-    if (typeof fn === 'function' && subscribers.current.indexOf(fn) === -1) {
-      subscribers.current.push(fn);
-    }
-
-    return () => {
-      const index = subscribers.current.indexOf(fn);
-
-      if (index !== -1) {
-        subscribers.current.splice(index, 1);
-      }
-    };
-  }, []);
-
+  const { effects, dispatch: dispatcher } = store.getEffect(dispatch, state);
 
   const value = {
     state: getState(),
-    dispatch,
-    actions,
-    effects,
-    subscribe
+    dispatch: dispatcher,
+    effects
   };
 
   return (
     <Context.Provider
       value={value}
-      {...props}
+      {...providerProps}
     />
   );
 };

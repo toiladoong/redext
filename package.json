@@ -1,6 +1,6 @@
 {
   "name": "redext",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "A simple global store based on React Context and Hooks",
   "main": "./dist/index.js",
   "scripts": {

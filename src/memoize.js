@@ -1,4 +1,4 @@
-import React, { memo } from 'react';
+import React from 'react';
 import isEqual from './utils/isEqual';
 
 const shallowDiffers = (prev, next) => {
@@ -23,7 +23,7 @@ const areEqual = (prevProps, nextProps) => {
 };
 
 const memoize = (Component, memoPropsAreEqual = areEqual) => {
-  return memo(Component, memoPropsAreEqual)
+  return React.memo(Component, memoPropsAreEqual)
 };
 
 export default memoize

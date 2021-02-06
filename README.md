@@ -28,6 +28,21 @@ export default {
            showModal: true,
            modalState
          });
+         
+         // or
+         dispatch({
+           type: 'common/updateState',
+           payload: {
+             showModal: true,
+             modalState
+           }
+         });
+         
+         // or
+         dispatch.common.updateState({
+           showModal: true,
+           modalState
+         })
        }
      }
   },
@@ -43,18 +58,6 @@ export default {
           ...state,
           theme: state.theme === 'white' ? 'dark' : 'white'
         };
-      },
-      openModal: (state) => {
-        return {
-          ...state,
-          showModal: true
-        }
-      },
-      closeModal: (state) => {
-        return {
-          ...state,
-          showModal: false
-        }
       }
   }
 }
@@ -63,9 +66,11 @@ export default {
 ```js
 // store/models/index.js
 import common from './common';
+import auth from './auth';
 
 export default {
-  common
+  common,
+  auth
 }
 ```
 
@@ -79,25 +84,29 @@ export { Provider, connect, init, models }
 ```
 
 ```js
-// src/index.js
+// client/index.js
 import { Provider, init, models } from './store';
-
-const initialValue = {};
 
 const store = init({
   models
 });
 
-<Provider store={store} initialValue={initialValue}>
-  <App />
-</Provider>
+const App = ({ children, initialValue = {} }) => {
+  return (
+    <Provider store={store} initialValue={initialValue}>
+       {children}
+    </Provider>
+  )
+}
+
+export default App
 ```
 
 ```js
-// src/pages/movie.js
+// client/pages/movie.js
 import { connect, memoize, useDeepEffect } from 'redext';
 
-const Movie = ({ theme, onOpenModal, changeTheme }) => {
+const Movie = ({ theme, onOpenModal }) => {
   useDeepEffect(() => {
   }, [array, object]);
   
@@ -112,9 +121,8 @@ const mapState = ({ common: { theme } }) => ({
   theme
 });
 
-const mapDispatch = ({ common: { onOpenModal, changeTheme } }) => ({
-  onOpenModal,
-  changeTheme
+const mapDispatch = ({ common: { onOpenModal } }) => ({
+  onOpenModal
 });
 
 // options

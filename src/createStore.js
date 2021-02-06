@@ -1,7 +1,7 @@
 export default function createStore(config = {}) {
-  const { models } = config;
+  const { models = {} } = config;
 
-  const getState = (initialState) => {
+  const getState = (initialState = {}) => {
     const newInitialState = {};
 
     Object.keys(models).forEach((modelFilename) => {
@@ -15,7 +15,7 @@ export default function createStore(config = {}) {
     return newInitialState;
   };
 
-  const getReducer = (state, action) => {
+  const getReducer = (state = {}, action = {}) => {
     const newState = {};
 
     Object.keys(models).forEach((modelFilename) => {
@@ -38,7 +38,7 @@ export default function createStore(config = {}) {
   };
 
   const getEffect = (dispatch, state = {}) => {
-    const newEffect = {};
+    const newEffects = {};
 
     Object.keys(models).forEach((modelFilename) => {
       const modelDispatcher = {};
@@ -56,6 +56,8 @@ export default function createStore(config = {}) {
 
       let effects;
 
+      dispatch[modelFilename] = modelDispatcher;
+
       if (typeof effectsToConfig === 'function') {
         effects = effectsToConfig(dispatch)
       } else {
@@ -68,10 +70,13 @@ export default function createStore(config = {}) {
         effectObj[effectName] = effects[effectName].bind(modelDispatcher)
       });
 
-      newEffect[modelName] = effectObj;
+      newEffects[modelName] = effectObj;
     });
 
-    return newEffect;
+    return {
+      effects: newEffects,
+      dispatch
+    };
   };
 
   return {
