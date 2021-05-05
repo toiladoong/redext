@@ -106,7 +106,7 @@ export default App
 // client/pages/movie.js
 import { connect, memoize, useDeepEffect } from 'redext';
 
-const Movie = ({ theme, onOpenModal }) => {
+const Movie = ({ dispatch, theme, onOpenModal }) => {
   useDeepEffect(() => {
   }, [array, object]);
   
