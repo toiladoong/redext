@@ -1,6 +1,5 @@
 import React, { useContext } from 'react';
 import Context from '../Context';
-import useDeepMemo from './useDeepMemo';
 
 const useDispatcher = (mapDispatchToProps) => {
   const { dispatch, effects } = useContext(Context);
@@ -11,9 +10,7 @@ const useDispatcher = (mapDispatchToProps) => {
     filteredDispatch = mapDispatchToProps(effects, dispatch)
   }
 
-  return useDeepMemo(() => {
-    return filteredDispatch
-  }, [filteredDispatch])
+  return filteredDispatch
 };
 
 export default useDispatcher

@@ -19,15 +19,15 @@ const connect = (mapStateToProps, mapDispatchToProps) => Component => {
       filteredDispatch = mapDispatchToProps(effects, dispatch)
     }
 
-    const [memoState, memoDispatch] = useDeepMemo(() => {
-      return [filteredState, filteredDispatch]
-    }, [filteredState, filteredDispatch]);
+    const memoState = useDeepMemo(() => {
+      return filteredState
+    }, [filteredState]);
 
     return (
       <Component
         {...props}
         {...memoState}
-        {...memoDispatch}
+        {...filteredDispatch}
         dispatch={dispatch}
       />
     )
