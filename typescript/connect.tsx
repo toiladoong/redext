@@ -1,6 +1,5 @@
-import React, { useContext } from 'react';
+import React, { useContext, useMemo } from 'react';
 import Context from './Context';
-import useDeepMemo from './hooks/useDeepMemo';
 
 const connect = (mapStateToProps, mapDispatchToProps) => Component => {
   return props => {
@@ -19,7 +18,7 @@ const connect = (mapStateToProps, mapDispatchToProps) => Component => {
       filteredDispatch = mapDispatchToProps(effects, dispatch)
     }
 
-    const [memoState, memoDispatch] = useDeepMemo(() => {
+    const [memoState, memoDispatch] = useMemo(() => {
       return [filteredState, filteredDispatch]
     }, [filteredState, filteredDispatch]);
 

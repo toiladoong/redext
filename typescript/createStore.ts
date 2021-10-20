@@ -67,8 +67,6 @@ export default function createStore(config = {}) {
       const effectObj = {};
 
       Object.keys(effects).forEach((effectName) => {
-        modelDispatcher[effectName] = effects[effectName].bind(modelDispatcher);
-
         effectObj[effectName] = effects[effectName].bind(modelDispatcher)
       });
 
