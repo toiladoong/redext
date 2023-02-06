@@ -82,7 +82,6 @@ export default function createStore(config = {}) {
   };
   
   return {
-    subscribe,
     getState,
     getReducer,
     getEffect
