@@ -3,22 +3,31 @@ import Context from '../Context';
 import useDeepMemo from './useDeepMemo';
 
 const useContextSelector = (mapStateToProps) => {
-  const { state = {}, subscribe } = useContext(Context);
-  
+  if (useSyncExternalStore) {
+    const { subscribe, getState } = useContext(Context);
+    const getSnapshot = () => {
+      if (!mapStateToProps) {
+        return undefined
+      }
+
+      const state = getState();
+
+      return mapStateToProps(state);
+    };
+
+    return useSyncExternalStore(subscribe, getSnapshot, getSnapshot)
+  }
+
+  const { state = {} } = useContext(Context);
+
   let filteredState = {};
-  
+
   if (mapStateToProps) {
     filteredState = mapStateToProps(state);
   } else {
     filteredState = state
   }
-  
-  if (useSyncExternalStore) {
-    const getSnapshot = () => filteredState;
-    
-    return useSyncExternalStore(subscribe, getSnapshot, getSnapshot)
-  }
-  
+
   return useDeepMemo(() => {
     return filteredState
   }, [filteredState])
