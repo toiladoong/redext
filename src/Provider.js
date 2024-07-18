@@ -22,7 +22,7 @@ const Provider = (props) => {
     return stateRef.current;
   };
 
-  const { effects, dispatch: dispatcher } = store.getEffect(dispatch, state);
+  const { effects, dispatch: dispatcher, models, on } = store.getEffect(dispatch, state);
 
   const subscribe = (listener) => {
     listeners.add(listener);
@@ -37,6 +37,24 @@ const Provider = (props) => {
     getState,
     state: getState(),
     dispatch: (arg) => {
+      on('onModel', (onModel) => {
+        const type = arg?.type;
+        const types = type.split('/');
+        const modelName = types[0];
+        const actionName = types[1];
+        const model = models[modelName];
+
+        onModel({
+          model: {
+            ...model,
+            name: modelName
+          },
+          modelName,
+          actionName,
+          dispatch: dispatcher
+        })
+      });
+
       dispatcher(arg);
 
       listeners.forEach((l) => l());

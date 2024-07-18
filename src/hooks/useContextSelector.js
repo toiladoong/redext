@@ -1,4 +1,4 @@
-import React, { useContext, useSyncExternalStore } from 'react';
+import { useContext, useSyncExternalStore } from 'react';
 import Context from '../Context';
 import useDeepMemo from './useDeepMemo';
 

@@ -1,86 +1,138 @@
+function merge(original, extra) {
+  return extra ? { ...extra, ...original } : original
+}
+
 export default function createStore(config = {}) {
+  const { plugins = [] } = config;
+
+  plugins.forEach((plugin) => {
+    if (plugin.config) {
+      config.models = merge(config.models, plugin.config.models);
+    }
+  });
+
+  const on = (eventName, callback) => {
+    plugins.forEach((plugin) => {
+      if (plugin[eventName]) {
+        callback(plugin[eventName])
+      }
+    })
+  }
+
   const { models = {} } = config;
-  
+
   const getState = (initialState = {}) => {
     const newInitialState = {};
-    
+
     Object.keys(models).forEach((modelFilename) => {
-      const dataModel = models[modelFilename] || {};
-      
-      const modelName = dataModel.name || modelFilename;
-      
-      newInitialState[modelName] = Object.assign({}, dataModel.state, initialState[modelName])
+      const model = models[modelFilename] || {};
+
+      const modelName = model.name || modelFilename;
+
+      newInitialState[modelName] = Object.assign({}, model.state, initialState[modelName])
     });
-    
+
     return newInitialState;
   };
-  
+
   const getReducer = (state = {}, action = {}) => {
     const newState = {};
-    
+
     Object.keys(models).forEach((modelFilename) => {
-      const dataModel = models[modelFilename] || {};
-      
-      const { reducers = {}, name: modelName = modelFilename } = dataModel;
-      
+      const model = models[modelFilename] || {};
+
+      const { reducers = {}, name: modelName = modelFilename } = model;
+
       let reducerState = state[modelName];
-      
+
       const actionType = action.type.replace(`${modelName}/`, '');
-      
+
       if (actionType in reducers) {
-        reducerState = reducers[actionType](reducerState, action.payload);
+        reducerState = reducers[actionType](reducerState, action.payload, action.params);
       }
-      
+
       newState[modelName] = reducerState;
     });
-    
+
     return newState;
   };
-  
+
   const getEffect = (dispatch, state = {}) => {
     const newEffects = {};
-    
+
     Object.keys(models).forEach((modelFilename) => {
       const modelDispatcher = {};
-      const dataModel = models[modelFilename] || {};
-      
-      const { reducers = {}, effects: effectsToConfig = {}, name: modelName = modelFilename } = dataModel;
-      
-      modelDispatcher.state = state[modelFilename];
-      
-      Object.keys(reducers).forEach((reducerName) => {
-        const type = `${modelName}/${reducerName}`;
-        
-        modelDispatcher[reducerName] = (payload) => dispatch({ type, payload });
-      });
-      
-      let effects;
-      
-      dispatch[modelFilename] = modelDispatcher;
-      
-      if (typeof effectsToConfig === 'function') {
-        effects = effectsToConfig(dispatch)
-      } else {
-        effects = effectsToConfig;
+      const model = models[modelFilename] || {};
+
+      const {
+        reducers = {},
+        effects: effectsFromConfig = {},
+        name: modelName = modelFilename
+      } = model;
+
+      modelDispatcher.state = state[modelName];
+
+      const onModelListener = ({ actionName }) => {
+        on('onModel', (onModel) => {
+          onModel({
+            model: {
+              ...model,
+              name: modelName
+            },
+            modelName,
+            actionName,
+            dispatch
+          })
+        });
       }
-      
-      const effectObj = {};
-      
-      Object.keys(effects).forEach((effectName) => {
-        modelDispatcher[effectName] = effects[effectName].bind(modelDispatcher);
-        
-        effectObj[effectName] = effects[effectName].bind(modelDispatcher)
+
+      Object.keys(reducers).forEach((actionName) => {
+        const type = `${modelName}/${actionName}`;
+
+        modelDispatcher[actionName] = (payload, params) => {
+          // onModelListener({ actionName });
+          dispatch({ type, payload, params });
+        };
       });
-      
+
+      let effects;
+
+      dispatch[modelName] = modelDispatcher;
+
+      if (typeof effectsFromConfig === 'function') {
+        effects = effectsFromConfig(dispatch)
+      } else {
+        effects = effectsFromConfig;
+      }
+
+      const effectObj = {};
+
+      Object.keys(effects).forEach((effectName) => {
+        const effectFunc = (...args) => {
+          onModelListener({
+            actionName: effectName
+          });
+
+          const callback = effects[effectName].bind(modelDispatcher);
+
+          return callback(...args)
+        }
+
+        modelDispatcher[effectName] = effectFunc;
+        effectObj[effectName] = effectFunc;
+      });
+
       newEffects[modelName] = effectObj;
     });
-    
+
     return {
       effects: newEffects,
-      dispatch
+      models,
+      dispatch,
+      on
     };
   };
-  
+
   return {
     getState,
     getReducer,
