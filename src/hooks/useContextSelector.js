@@ -2,8 +2,10 @@ import { useContext, useSyncExternalStore } from 'react';
 import Context from '../Context';
 import useDeepMemo from './useDeepMemo';
 
-const useContextSelector = (mapStateToProps) => {
-  if (useSyncExternalStore) {
+const useContextSelector = (mapStateToProps, params = {}) => {
+  const { isWithSyncExternalStore = true } = params;
+
+  if (isWithSyncExternalStore && useSyncExternalStore) {
     const { subscribe, getState } = useContext(Context);
     const getSnapshot = () => {
       if (!mapStateToProps) {
